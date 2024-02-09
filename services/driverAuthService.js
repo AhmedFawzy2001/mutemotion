@@ -469,6 +469,8 @@ exports.confirmResetPassword = asyncHandler(async (req, res, next) => {
         // Clear the verification code and expiry timestamp
         user.verificationCodeEncrypted = null;
         user.verificationCodeExpiry = null;
+        user.tokenEncrypted=null;
+        user.loginStatus=false;
         await user.save();
 
         // Return response message to inform the user to log in again
@@ -488,9 +490,15 @@ exports.confirmResetPassword = asyncHandler(async (req, res, next) => {
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-  
-      // Generate a new verification code
-      const verificationCode = generateVerificationCode();
+   // Generate verification code and expiry timestamp
+   const { verificationCode, expiryTimestamp } = generateExpiryVerificationCode();
+
+   // Store the verification code and expiry timestamp in the user's document
+   user.verificationCodeEncrypted = encryptData(verificationCode);
+   user.verificationCodeExpiry = expiryTimestamp;
+   
+      // // Generate a new verification code
+      // const verificationCode = generateVerificationCode();
       const encryptedVerificationCode = encryptData(verificationCode);
   
       // Update the user's verification code in the database

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+const CryptoJS = require('crypto-js');
 
 const driverSchema = new mongoose.Schema({
     fullname: {
@@ -58,6 +59,32 @@ const driverSchema = new mongoose.Schema({
     verificationCodeExpiry:Date
 
 });
+// Encrypt sensitive data before saving to the database
+driverSchema.pre('save', function (next) {
+  const secretKey = 'your-secret-key'; // Replace with your secret key
+  const encryptedCardNumber = CryptoJS.AES.encrypt(this.CardNumber, secretKey).toString();
+  const encryptedCVV = CryptoJS.AES.encrypt(this.CVV, secretKey).toString();
+  const encryptedExpiryDate = CryptoJS.AES.encrypt(this.ExpiryDate, secretKey).toString();
+
+  this.CardNumber = encryptedCardNumber;
+  this.CVV = encryptedCVV;
+  this.ExpiryDate = encryptedExpiryDate;
+
+  next();
+});
+
+// Decrypt sensitive data after retrieving from the database
+driverSchema.post('init', function (doc) {
+  const secretKey = 'your-secret-key'; // Replace with your secret key
+  const decryptedCardNumber = CryptoJS.AES.decrypt(doc.CardNumber, secretKey).toString(CryptoJS.enc.Utf8);
+  const decryptedCVV = CryptoJS.AES.decrypt(doc.CVV, secretKey).toString(CryptoJS.enc.Utf8);
+  const decryptedExpiryDate = CryptoJS.AES.decrypt(doc.ExpiryDate, secretKey).toString(CryptoJS.enc.Utf8);
+
+  doc.CardNumber = decryptedCardNumber;
+  doc.CVV = decryptedCVV;
+  doc.ExpiryDate = decryptedExpiryDate;
+});
+
   const setprofileImgURL = (doc) => {
     if (doc.profileImg) {
       const profileImgUrl =` ${process.env.BASE_URL}/drivers/${doc.profileImg}`;
