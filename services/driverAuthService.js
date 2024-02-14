@@ -39,28 +39,28 @@ const generateExpiryVerificationCode = () => {
   };
   
   // Middleware to verify the JWT token
-  const verifyToken = async (req, res, next) => {
-    const token = req.header('Authorization');
+  // const verifyToken = async (req, res, next) => {
+  //   const token = req.header('Authorization');
   
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized: No token provided' });
-    }
+  //   if (!token) {
+  //     return res.status(401).json({ error: 'Unauthorized: No token provided' });
+  //   }
   
-    try {
-      const decoded = jwt.verify(token.replace('Bearer ', ''), 'the-secret-key-jwt-in');
-      req.user = decoded;
+  //   try {
+  //     const decoded = jwt.verify(token.replace('Bearer ', ''), 'the-secret-key-jwt-in');
+  //     req.user = decoded;
   
-      // Check if the token is blacklisted
-      const isTokenBlacklisted = await BlacklistedToken.exists({ token });
-      if (isTokenBlacklisted) {
-        return res.status(401).json({ error: 'Unauthorized: Token is blacklisted' });
-      }
+  //     // Check if the token is blacklisted
+  //     const isTokenBlacklisted = await BlacklistedToken.exists({ token });
+  //     if (isTokenBlacklisted) {
+  //       return res.status(401).json({ error: 'Unauthorized: Token is blacklisted' });
+  //     }
   
-      next();
-    } catch (error) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
-    }
-  };
+  //     next();
+  //   } catch (error) {
+  //     return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+  //   }
+  // };
   /////////////////
 exports.signup = asyncHandler(async (req, res, next) => {
     const { fullname, email, password } = req.body;

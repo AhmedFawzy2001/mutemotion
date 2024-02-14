@@ -486,7 +486,7 @@ exports.requestAnotherVerificationCode = asyncHandler(async (req, res, next) => 
     const { email } = req.body;
 
     // Find the user by email
-    const user = await pasengerUser.findOne({ email });
+    const user = await passengerUser.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
