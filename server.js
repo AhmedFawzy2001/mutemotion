@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer');
 const path = require("path")
 const morgan = require("morgan");
 require("dotenv").config();
+const bodyParser = require('body-parser');
 const dbConnection= require("./config/database")
 
 const driverauthRoute = require('./api/driverAuthRoute');
@@ -14,7 +15,7 @@ const passengerauthRoute = require('./api/passengerAuthRoute');
 
 
 
-const bodyParser = require('body-parser');
+
 
 
 dbConnection();
@@ -26,7 +27,7 @@ deleteNonActivatedPassengers();
 
 const app = express();
 const jsonParser=bodyParser.json();
-
+app.use(bodyParser.urlencoded({ extended: false }));
 app.get("/",(req , res)=>{
     res.send("hello")
 });
