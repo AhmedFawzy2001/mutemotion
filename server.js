@@ -4,6 +4,7 @@ const deleteNonActivatedPassengers = require('./tasks/delete non-activated passe
 const sendActivationRemindersForDrivers = require('./tasks/reminder for non-activated drivers');
 const sendActivationRemindersForPassengers = require('./tasks/reminder for non-activated passengers');
 const nodemailer = require('nodemailer');
+const cors = require('cors');
 const path = require("path")
 const morgan = require("morgan");
 require("dotenv").config();
@@ -26,6 +27,11 @@ deleteNonActivatedPassengers();
 
 
 const app = express();
+// Enable other domains to access your application
+app.use(cors());
+app.options('*', cors());
+
+
 const jsonParser=bodyParser.json();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.get("/",(req , res)=>{
