@@ -6,9 +6,11 @@ const sendActivationRemindersForPassengers = require('./tasks/reminder for non-a
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 const path = require("path")
+// const multer = require('multer');
 const morgan = require("morgan");
 require("dotenv").config();
 const bodyParser = require('body-parser');
+
 const dbConnection= require("./config/database")
 
 const driverauthRoute = require('./api/driverAuthRoute');
@@ -30,14 +32,19 @@ const app = express();
 // Enable other domains to access your application
 app.use(cors());
 app.options('*', cors());
+// Set up multer middleware to parse multipart/form-data
+// const upload = multer();
+// Parse application/json
+app.use(bodyParser.json());
+
+// Parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }));
 
 
-const jsonParser=bodyParser.json();
-app.use(bodyParser.urlencoded({ extended: false }));
 app.get("/",(req , res)=>{
     res.send("hello")
 });
-app.use(jsonParser)
+// app.use(jsonParser)
 
 
 app.use('/api/v1/driver', driverauthRoute);

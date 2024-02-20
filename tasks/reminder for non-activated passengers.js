@@ -36,7 +36,7 @@ const sendActivationRemindersForPassengers = () => {
             <body>
               <div>
                 <h2>Activate Your Account</h2>
-                <p>Dear ${user.fullname},</p>
+                <p>Dear ${user.firstname},</p>
                 <p>This is a reminder to activate your account. If you don't activate your account within the next 2 minutes, your profile will be deleted.</p>
                 <p>Thank you!</p>
               </div>

@@ -37,7 +37,7 @@ const sendActivationRemindersForDrivers = () => {
             <body>
               <div>
                 <h2>Activate Your Account</h2>
-                <p>Dear ${driverUser.fullname},</p>
+                <p>Dear ${user.fullname},</p>
                 <p>This is a reminder to activate your account. If you don't activate your account within the next 2 minutes, your profile will be deleted.</p>
                 <p>Thank you!</p>
               </div>
@@ -52,7 +52,7 @@ const sendActivationRemindersForDrivers = () => {
             console.error(error);
             // Handle error while sending reminder email
           } else {
-            console.log(`Reminder email sent to: ${driverUser.email}`);
+            console.log(`Reminder email sent to: ${user.email}`);
           }
         });
       }

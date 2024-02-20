@@ -7,10 +7,13 @@ const express = require('express');
 const {
   confirmResetPassword,login,logout,requestAnotherVerificationCode,resetPassword,signup,updateLocation,updateStatus,verify
 } = require('../services/driverAuthService');
-
+const multer = require('multer');
 const router = express.Router();
-
-router.post('/signup', signup);
+const upload=multer({dest:"uploads/drivers"})
+router.post('/signup',upload.single("image"),(req,res,next)=>{
+  console.log(req.file);
+  next();
+} ,signup);
 router.post('/login', login);
 router.post('/verify', verify);
 router.post('/logout', logout);
