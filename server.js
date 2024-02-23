@@ -79,28 +79,65 @@ app.use(bodyParser.json());
 // Parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+// app.post('/api/passengers/:passengerId/transports', async (req, res) => {
+//     try {
+//       const passengerId = req.params.passengerId;
+//       const transportData = { ...req.body, passenger: passengerId };
+//       const transport = new Transport(transportData);
+//       await transport.save();
+//       res.status(201).json({ message: 'Transport added successfully' });
+//     } catch (error) {
+//       res.status(500).json({ error: 'Failed to add transport' });
+//     }
+//   });
+//   app.post('/api/passengers/:passengerId/city-to-city-rides', async (req, res) => {
+//     try {
+//       const passengerId = req.params.passengerId;
+//       const cityToCityRideData = { ...req.body, passenger: passengerId };
+//       const cityToCityRide = new CityToCityRide(cityToCityRideData);
+//       await cityToCityRide.save();
+//       res.status(201).json({ message: 'City to city ride added successfully' });
+//     } catch (error) {
+//       res.status(500).json({ error: 'Failed to add city to city ride' });
+//     }
+//   });
 app.post('/api/passengers/:passengerId/transports', async (req, res) => {
     try {
-      const passengerId = req.params.passengerId;
-      const transportData = { ...req.body, passenger: passengerId };
-      const transport = new Transport(transportData);
-      await transport.save();
-      res.status(201).json({ message: 'Transport added successfully' });
+        const passengerId = req.params.passengerId;
+        
+        // Check if the passenger exists
+        const passenger = await passengerUser.findById(passengerId);
+        if (!passenger) {
+            return res.status(404).json({ error: 'Passenger not found' });
+        }
+
+        const transportData = { ...req.body, passenger: passengerId };
+        const transport = new Transport(transportData);
+        await transport.save();
+        res.status(201).json({ message: 'Transport added successfully' });
     } catch (error) {
-      res.status(500).json({ error: 'Failed to add transport' });
+        res.status(500).json({ error: 'Failed to add transport' });
     }
-  });
-  app.post('/api/passengers/:passengerId/city-to-city-rides', async (req, res) => {
+});
+
+app.post('/api/passengers/:passengerId/city-to-city-rides', async (req, res) => {
     try {
-      const passengerId = req.params.passengerId;
-      const cityToCityRideData = { ...req.body, passenger: passengerId };
-      const cityToCityRide = new CityToCityRide(cityToCityRideData);
-      await cityToCityRide.save();
-      res.status(201).json({ message: 'City to city ride added successfully' });
+        const passengerId = req.params.passengerId;
+        
+        // Check if the passenger exists
+        const passenger = await passengerUser.findById(passengerId);
+        if (!passenger) {
+            return res.status(404).json({ error: 'Passenger not found' });
+        }
+
+        const cityToCityRideData = { ...req.body, passenger: passengerId };
+        const cityToCityRide = new CityToCityRide(cityToCityRideData);
+        await cityToCityRide.save();
+        res.status(201).json({ message: 'City to city ride added successfully' });
     } catch (error) {
-      res.status(500).json({ error: 'Failed to add city to city ride' });
+        res.status(500).json({ error: 'Failed to add city to city ride' });
     }
-  });
+});
   app.post('/api/take-it/:rideId', async (req, res) => {
     try {
       const rideId = req.params.rideId;
