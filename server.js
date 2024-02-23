@@ -39,9 +39,9 @@ const transportSchema = new mongoose.Schema({
     passenger: { type: mongoose.Schema.Types.ObjectId, ref: 'passenger' }, // Reference to the Passenger model
     location: String,
     destination: String,
-    dateTime: Date,
-    expectedCost: Number,
-    paymentMethod: { type: String, enum: ['cash', 'credit card'] },
+    dateTime: String,
+    expectedCost: String,
+    paymentMethod: { type: String},
     isTaken: { type: Boolean, default: false },
     driver:{ type: mongoose.Schema.Types.ObjectId, ref: 'driver' ,default:null},
   });
@@ -50,11 +50,11 @@ const transportSchema = new mongoose.Schema({
     passenger: { type: mongoose.Schema.Types.ObjectId, ref: 'passenger' }, // Reference to the Passenger model
     location: String,
     destination: String,
-    dateTime: Date,
-    numberOfPassengers: Number,
-    numberOfBags: Number,
-    expectedCost: Number,
-    paymentMethod: { type: String, enum: ['cash', 'credit card'] },
+    dateTime: String,
+    numberOfPassengers: String,
+    numberOfBags: String,
+    expectedCost: String,
+    paymentMethod: { type: String },
     isTaken: { type: Boolean, default: false },
     driver:{ type: mongoose.Schema.Types.ObjectId, ref: 'driver',default:null },
   });
