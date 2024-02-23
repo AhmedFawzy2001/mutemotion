@@ -56,7 +56,8 @@ const driverSchema = new mongoose.Schema({
     latitude: Number,  // Add latitude field
     nodeMCUIP:{type:String,default:null},
     createdAt: { type: Date, default: Date.now },
-    verificationCodeExpiry:Date
+    verificationCodeExpiry:Date,
+    isAvailable: { type: Boolean, default: true } // Added isAvailable field with default value true
 
 });
 // Encrypt sensitive data before saving to the database
