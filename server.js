@@ -158,7 +158,7 @@ app.post('/api/transports', async (req, res) => {
 // });
 app.post('/api/city-to-city-rides', async (req, res) => {
     try {
-        const { passengerId,driver,location,destination,data_and_time ,expectedCost,noOfPassenger,noOfBags,paymentMethod  } = req.body;
+        const { passengerId,driver,location,destination,data_and_time,expectedCost,noOfPassenger,noOfBags,paymentMethod} = req.body;
         
         // Check if the passenger exists
         const passenger = await passengerUser.findById(passengerId);
@@ -166,7 +166,7 @@ app.post('/api/city-to-city-rides', async (req, res) => {
             return res.status(404).json({ error: 'Passenger not found' });
         }
 
-        const cityToCityRide = new CityToCityRide({ driver,location,destination,data_and_time ,expectedCost,noOfPassenger,noOfBags,paymentMethod , passenger: passengerId });
+        const cityToCityRide = new CityToCityRide({ driver,location,destination,data_and_time ,expectedCost,noOfPassenger,noOfBags,paymentMethod,passenger:passengerId});
         await cityToCityRide.save();
         res.status(201).json({ message: 'City to city ride added successfully' });
     } catch (error) {
