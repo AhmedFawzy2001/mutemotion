@@ -50,9 +50,9 @@ const transportSchema = new mongoose.Schema({
     passenger: { type: mongoose.Schema.Types.ObjectId, ref: 'passenger' }, // Reference to the Passenger model
     location: String,
     destination: String,
-    dateTime: String,
-    numberOfPassengers: String,
-    numberOfBags: String,
+    date_and_Time: String,
+    numberOfPassenger: String,
+    noOfBags: String,
     expectedCost: String,
     paymentMethod: { type: String },
     isTaken: { type: Boolean, default: false },
