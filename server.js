@@ -39,7 +39,7 @@ const transportSchema = new mongoose.Schema({
     passenger: { type: mongoose.Schema.Types.ObjectId, ref: 'passenger' }, // Reference to the Passenger model
     location: String,
     destination: String,
-    dateTime: String,
+    dateAndtime: String,
     expectedCost: String,
     paymentMethod: { type: String},
     isTaken: { type: Boolean, default: false },
@@ -122,7 +122,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/api/transports', async (req, res) => {
     try {
-        const { passengerId,driver,location,destination,data_and_time ,expectedCost,noOfPassenger,noOfBags,paymentMethod  } = req.body;
+        const {passengerId,driver,location,destination,dateAndtime,expectedCost,paymentMethod} = req.body;
         
         // Check if the passenger exists
         const passenger = await passengerUser.findById(passengerId);
@@ -130,7 +130,7 @@ app.post('/api/transports', async (req, res) => {
             return res.status(404).json({ error: 'Passenger not found' });
         }
 
-        const transport = new Transport({ passengerId,driver,location,destination,data_and_time ,expectedCost,noOfPassenger,noOfBags,paymentMethod });
+        const transport = new Transport({ passenger:passengerId, driver,location,destination,dateAndtime,expectedCost,paymentMethod });
         await transport.save();
         res.status(201).json({ message: 'Transport added successfully' });
     } catch (error) {
