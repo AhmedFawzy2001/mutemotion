@@ -5,6 +5,7 @@ const sendActivationRemindersForDrivers = require('./tasks/reminder for non-acti
 const sendActivationRemindersForPassengers = require('./tasks/reminder for non-activated passengers');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
+const crypto = require('crypto');
 const path = require("path")
 // const multer = require('multer');
 const morgan = require("morgan");
