@@ -78,6 +78,8 @@ exports.signup = asyncHandler(async (req, res, next) => {
       firstname,
       lastname,
       email,
+      phone,
+      gender,
       verificationCodeEncrypted: encryptedVerificationCode,
       password: hashedPassword,
       tokenEncrypted: null, // Set tokenEncrypted to null initially
