@@ -43,24 +43,56 @@ app.use(bodyParser.json());
 // Parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
+
 const ENCRYPTION_KEY = 'your-encryption-key'; // Must be kept secret
-const encryptToken = (text) => {
+
+// Function to encrypt a token using AES encryption
+const encryptToken = (token) => {
   const cipher = crypto.createCipher('aes-256-cbc', ENCRYPTION_KEY);
-  let encrypted = cipher.update(text, 'utf8', 'hex');
+  let encrypted = cipher.update(token, 'utf8', 'hex');
   encrypted += cipher.final('hex');
   return encrypted;
 };
 
 // Middleware function for authentication and encryption
+const passengerAuthenticateAndEncryptToken = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization').replace('Bearer ', '');
+    //const providedToken = req.header('Authorization').replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ error: 'Authorization token is required' });
+    }
+
+    // Encrypt the token
+    const encryptedToken = encryptToken(token);
+    console.log(encryptedToken)
+    // Retrieve user from database based on the encrypted token
+    const user = await passengerUser.findOne({ tokenEncrypted: encryptedToken });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    // Attach the user object to the request for further processing
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// Middleware function for authentication and encryption
 const driverAuthenticateAndEncryptToken = async (req, res, next) => {
   try {
-    const token = req.headers.authorization;
+    const token = req.header('Authorization').replace('Bearer ', '');
 
     if (!token) {
       return res.status(401).json({ error: 'Authorization token is required' });
     }
 
-    // Encrypt the token (you should define your own encryptToken function)
+    // Encrypt the token
     const encryptedToken = encryptToken(token);
 
     // Retrieve user from database based on the encrypted token
@@ -78,48 +110,19 @@ const driverAuthenticateAndEncryptToken = async (req, res, next) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
-// Middleware function for authentication and encryption
-const passengerAuthenticateAndEncryptToken = async (req, res, next) => {
-  try {
-    const token = req.headers.authorization;
 
-    if (!token) {
-      return res.status(401).json({ error: 'Authorization token is required' });
-    }
-
-    // Encrypt the token (you should define your own encryptToken function)
-    const encryptedToken = encryptToken(token);
-
-    // Retrieve user from database based on the encrypted token
-    const user = await passengerUser.findOne({ tokenEncrypted: encryptedToken });
-
-    if (!user) {
-      return res.status(401).json({ error: 'Unauthorized access' });
-    }
-
-    // Attach the user object to the request for further processing
-    req.user = user;
-    next();
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-// Endpoint to get user information based on the token
+// Endpoint to get driver information based on the token
 app.get('/api/driverInfo', driverAuthenticateAndEncryptToken, async (req, res) => {
   try {
     // Extract user object from request
     const user = req.user;
 
     // Extract personal information from the user object
-    const { name, email, phoneNumber, address } = user;
+    const { fullname, email, password,age,carnum,color,model,cartype,phone,cardescription ,carImg,profileImg } = user;
 
     // Construct a response object with the user's personal information
     const userInfo = {
-      name,
-      email,
-      phoneNumber,
-      address
+      fullname, email, password,age,carnum,color,model,cartype,phone,cardescription ,carImg,profileImg
       // Add more fields as needed
     };
 
@@ -141,7 +144,7 @@ app.get('/api/passengerInfo', passengerAuthenticateAndEncryptToken, async (req, 
     const { firstname, lastname, email, phone, gender } = user;
 
     // Concatenate first name and last name
-    const fullName = `${firstname} ${lastname}`;
+    const fullName =`${firstname}${lastname}`;
 
     // Construct a response object with the user's personal information
     const userInfo = {
@@ -159,8 +162,6 @@ app.get('/api/passengerInfo', passengerAuthenticateAndEncryptToken, async (req, 
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-
 
 
 

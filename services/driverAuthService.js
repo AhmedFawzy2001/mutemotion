@@ -63,7 +63,7 @@ const generateExpiryVerificationCode = () => {
   // };
   /////////////////
 exports.signup = asyncHandler(async (req, res, next) => {
-    const { fullname, email, password } = req.body;
+    const { fullname, email, password,age,carnum,color,model,cartype,phone,cardescription } = req.body;
   
     const existingUser = await driverUser.findOne({ email });
     if (existingUser) {
@@ -78,7 +78,8 @@ exports.signup = asyncHandler(async (req, res, next) => {
       fullname,
       email,
       verificationCodeEncrypted: encryptedVerificationCode,
-      password: hashedPassword,
+      password: hashedPassword,age,carnum,color,model,cartype,phone,cardescription,
+
       tokenEncrypted: null, // Set tokenEncrypted to null initially
     });
   
