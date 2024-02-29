@@ -42,7 +42,7 @@ app.use(bodyParser.json());
 // Parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
-
+const ENCRYPTION_KEY = 'your-encryption-key'; // Must be kept secret
 const encryptToken = (text) => {
   const cipher = crypto.createCipher('aes-256-cbc', ENCRYPTION_KEY);
   let encrypted = cipher.update(text, 'utf8', 'hex');
