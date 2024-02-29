@@ -63,7 +63,7 @@ const generateExpiryVerificationCode = () => {
   };
   /////////////////
 exports.signup = asyncHandler(async (req, res, next) => {
-    const { firstname,lastname ,email, password } = req.body;
+    const { firstname,lastname ,email, password, phone, gender } = req.body;
   
     const existingUser = await passengerUser.findOne({ email });
     if (existingUser) {
