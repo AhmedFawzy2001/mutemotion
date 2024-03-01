@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Status Updates</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+</head>
+<body>
+  <h1>Driver Status Updates</h1>
+  <ul id="driverList"></ul>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const socket = io("http://localhost:8000"); // Connect to the Socket.IO server
+
+      // Listen for driverStatusChanged events from the server
+      socket.on('driverStatusChanged', (data) => {
+        const { driverId, isOnline } = data;
+
+        // Update the UI to reflect the driver's status change
+        const driverElement = document.getElementById(`driver_${driverId}`);
+        if (driverElement) {
+          driverElement.textContent = `Driver ID: ${driverId} - Online Status: ${isOnline ? 'Online' : 'Offline'}`;
+        } else {
+          const driverList = document.getElementById('driverList');
+          const newDriverElement = document.createElement('li');
+          newDriverElement.setAttribute('id', `driver_${driverId}`);
+          newDriverElement.textContent = `Driver ID: ${driverId} - Online Status: ${isOnline ? 'Online' : 'Offline'}`;
+          driverList.appendChild(newDriverElement);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

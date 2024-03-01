@@ -4,8 +4,12 @@ const deleteNonActivatedPassengers = require('./tasks/delete non-activated passe
 const sendActivationRemindersForDrivers = require('./tasks/reminder for non-activated drivers');
 const sendActivationRemindersForPassengers = require('./tasks/reminder for non-activated passengers');
 const nodemailer = require('nodemailer');
-const cors = require('cors');
+// const cors = require('cors');
+const cors = require('cors'); // Import cors module
 const crypto = require('crypto');
+const http = require('http');
+const socketIo = require('socket.io');
+
 const path = require("path")
 // const multer = require('multer');
 const morgan = require("morgan");
@@ -27,9 +31,11 @@ sendActivationRemindersForDrivers();
 sendActivationRemindersForPassengers();
 deleteNonActivatedPassengers();
 
-
 const app = express();
-// Enable other domains to access your application
+const server = http.createServer(app);
+const io = socketIo(server);
+
+// app.use(cors());
 app.use(cors());
 app.options('*', cors());
 // Set up multer middleware to parse multipart/form-data
@@ -164,9 +170,23 @@ app.get('/api/passengerInfo', passengerAuthenticateAndEncryptToken, async (req, 
 });
 
 
+// Socket.IO connection handler
+io.on('connection', async (socket) => {
+  console.log('Client connected');
 
+  // Extract driverId from the socket parameters
+  const driverId = socket.handshake.query.driverId;
 
+  // Update isOnline status to true when a driver connects
+  await driverUser.findOneAndUpdate({ driverId }, { isOnline: true });
 
+  // Handle disconnection
+  socket.on('disconnect', async () => {
+    console.log('Client disconnected');
+    // Update isOnline status to false when a driver disconnects
+    await driverUser.findOneAndUpdate({ driverId }, { isOnline: false });
+  });
+});
 
 
 
@@ -179,11 +199,27 @@ app.get('/api/passengerInfo', passengerAuthenticateAndEncryptToken, async (req, 
 app.use('/api/v1/driver', driverauthRoute);
 app.use('/api/v1/passenger', passengerauthRoute);
 
+// Socket.IO connection handler
+io.on('connection', async (socket) => {
+  console.log('Client connected');
 
+  // Extract driverId from the request headers
+  const driverId = socket.handshake.headers.driverid;
 
-const PORT = process.env.PORT;
-const server =  app.listen(PORT || 3000,()=>{
-    console.log('app running') ; 
+  // Update isOnline status to true when a driver connects
+  await driverUser.findOneAndUpdate({ driverId }, { isOnline: true });
+
+  // Handle disconnection
+  socket.on('disconnect', async () => {
+    console.log('Client disconnected');
+    // Update isOnline status to false when a driver disconnects
+    await driverUser.findOneAndUpdate({ driverId }, { isOnline: false });
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
 
 process.on('unhandledRejection', (err)=>{
