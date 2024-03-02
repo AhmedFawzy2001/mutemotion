@@ -57,9 +57,20 @@ const driverSchema = new mongoose.Schema({
     nodeMCUIP:{type:String,default:null},
     createdAt: { type: Date, default: Date.now },
     verificationCodeExpiry:Date,
-    isAvailable: { type: Boolean, default: true } // Added isAvailable field with default value true
-
-});
+    isAvailable: { type: Boolean, default: true }, // Added isAvailable field with default value true
+    location: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point'
+      },
+      coordinates: {
+        type: [Number],
+        required: false
+      }
+    }
+    
+    });
 // Encrypt sensitive data before saving to the database
 driverSchema.pre('save', function (next) {
   const secretKey = 'your-secret-key'; // Replace with your secret key

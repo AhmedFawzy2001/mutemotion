@@ -3,32 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Driver Status Updates</title>
+  <title>Passenger Dashboard</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
 </head>
 <body>
-  <h1>Driver Status Updates</h1>
-  <ul id="driverList"></ul>
+  <h1>Passenger Dashboard</h1>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const socket = io("http://localhost:8000"); // Connect to the Socket.IO server
 
-      // Listen for driverStatusChanged events from the server
-      socket.on('driverStatusChanged', (data) => {
-        const { driverId, isOnline } = data;
-
-        // Update the UI to reflect the driver's status change
-        const driverElement = document.getElementById(`driver_${driverId}`);
-        if (driverElement) {
-          driverElement.textContent = `Driver ID: ${driverId} - Online Status: ${isOnline ? 'Online' : 'Offline'}`;
-        } else {
-          const driverList = document.getElementById('driverList');
-          const newDriverElement = document.createElement('li');
-          newDriverElement.setAttribute('id', `driver_${driverId}`);
-          newDriverElement.textContent = `Driver ID: ${driverId} - Online Status: ${isOnline ? 'Online' : 'Offline'}`;
-          driverList.appendChild(newDriverElement);
-        }
+      // Listen for 'driverLocationUpdated' event from the server
+      socket.on('driverLocationUpdated', (data) => {
+        // Display driver's location data on the console
+        console.log('Driver ID:', data.driverId);
+        console.log('Location:', data.location);
       });
     });
   </script>

@@ -199,21 +199,136 @@ io.on('connection', async (socket) => {
 app.use('/api/v1/driver', driverauthRoute);
 app.use('/api/v1/passenger', passengerauthRoute);
 
+// Define the findNearbyDrivers function
+
 // Socket.IO connection handler
-io.on('connection', async (socket) => {
+// io.on('connection', async (socket) => {
+//   console.log('Client connected');
+
+//   // Extract driverId from the request headers
+//   const driverId = socket.handshake.headers.driverid;
+
+//   // Update isOnline status to true when a driver connects
+//   await driverUser.findOneAndUpdate({ driverId }, { isOnline: true });
+
+//   // Handle disconnection
+//   socket.on('disconnect', async () => {
+//     console.log('Client disconnected');
+//     // Update isOnline status to false when a driver disconnects
+//     await driverUser.findOneAndUpdate({ driverId }, { isOnline: false });
+//   });
+  
+
+
+
+// });
+
+// Socket.IO connection handler
+io.on('connection', (socket) => {
   console.log('Client connected');
 
-  // Extract driverId from the request headers
-  const driverId = socket.handshake.headers.driverid;
+  // Handle 'connectDriver' event
+  socket.on('connectDriver', async ({ driverId }) => {
+    console.log(`Driver with ID ${driverId} connected`);
+    try {
+      // Find the driver by ID
+      const driver = await driverUser.findById(driverId);
+      if (!driver) {
+        console.error('Driver not found');
+        return;
+      }
+      // Update isOnline status to true
+      driver.isOnline = true;
+      // Save the updated driver
+      await driver.save();
+      console.log('Driver is now online:', driver.isOnline);
+    } catch (err) {
+      console.error('Error updating driver status:', err);
+    }
+  });
 
-  // Update isOnline status to true when a driver connects
-  await driverUser.findOneAndUpdate({ driverId }, { isOnline: true });
+  // Handle 'disconnectDriver' event
+  socket.on('disconnectDriver', async ({ driverId }) => {
+    console.log(`Driver with ID ${driverId} disconnected`);
+    try {
+      // Find the driver by ID
+      const driver = await driverUser.findById(driverId);
+      if (!driver) {
+        console.error('Driver not found');
+        return;
+      }
+      // Update isOnline status to false
+      driver.isOnline = false;
+      // Save the updated driver
+      await driver.save();
+      console.log('Driver is now offline:', driver.isOnline);
+    } catch (err) {
+      console.error('Error updating driver status:', err);
+    }
+  });
+
+
+//   socket.on('updateLocation', async ({ driverId, location }) => {
+//     try {
+//       // Find the driver by ID
+//       const driver = await driverUser.findById(driverId);
+//       if (!driver) {
+//         console.error('Driver not found');
+//         return;
+//       }
+      
+//       // Check if the driver is online
+//       if (!driver.isOnline) {
+//         console.log('Driver is not online');
+//         return;
+//       }
+
+//       // Update the driver's location
+//       driver.location = location;
+//       // Save the updated driver
+//       await driver.save();
+//       console.log('Driver location updated:', driver.location);
+//     } catch (err) {
+//       console.error('Error updating driver location:', err);
+//     }
+// });
 
   // Handle disconnection
-  socket.on('disconnect', async () => {
+  
+  // Handle 'updateLocation' event for drivers
+socket.on('updateLocation', async ({ driverId, location }) => {
+  try {
+      // Find the driver by ID
+      const driver = await driverUser.findById(driverId);
+      if (!driver) {
+          console.error('Driver not found');
+          return;
+      }
+
+      // Check if the driver is online
+      if (!driver.isOnline) {
+          console.log('Driver is not online');
+          return;
+      }
+
+      // Update the driver's location
+      driver.location = location;
+      // Save the updated driver
+      await driver.save();
+      console.log('Driver location updated:', driver.location);
+
+      // Broadcast driver's location to connected passengers
+      
+    socket.broadcast.emit('driverLocationUpdated', { driverId, location });
+    
+  } catch (err) {
+      console.error('Error updating driver location:', err);
+  }
+});
+
+  
+  socket.on('disconnect', () => {
     console.log('Client disconnected');
-    // Update isOnline status to false when a driver disconnects
-    await driverUser.findOneAndUpdate({ driverId }, { isOnline: false });
   });
 });
 
