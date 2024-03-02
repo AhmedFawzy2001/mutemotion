@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const CryptoJS = require('crypto-js');
+
 
 const driverSchema = new mongoose.Schema({
     fullname: {
@@ -58,18 +58,31 @@ const driverSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     verificationCodeExpiry:Date,
     isAvailable: { type: Boolean, default: true }, // Added isAvailable field with default value true
+    // location: {
+    //   type: {
+    //     type: String,
+    //     enum: ['Point'],
+    //     default: 'Point',
+    //     required:false
+    //   },
+    //   coordinates: {
+    //     type: [Number],
+    //     required: false
+    //   }
+    // }
     location: {
       type: {
         type: String,
         enum: ['Point'],
-        default: 'Point'
+        default: 'Point',
+        required:false
       },
       coordinates: {
         type: [Number],
-        required: false
+        default: [0, 0],
+        required: false// Default coordinates: [0, 0] (longitude, latitude)
       }
     }
-    
     });
     driverSchema.index({ location: '2dsphere' });
 // // Encrypt sensitive data before saving to the database
