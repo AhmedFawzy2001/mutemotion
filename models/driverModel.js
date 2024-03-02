@@ -71,31 +71,32 @@ const driverSchema = new mongoose.Schema({
     }
     
     });
-// Encrypt sensitive data before saving to the database
-driverSchema.pre('save', function (next) {
-  const secretKey = 'your-secret-key'; // Replace with your secret key
-  const encryptedCardNumber = CryptoJS.AES.encrypt(this.CardNumber, secretKey).toString();
-  const encryptedCVV = CryptoJS.AES.encrypt(this.CVV, secretKey).toString();
-  const encryptedExpiryDate = CryptoJS.AES.encrypt(this.ExpiryDate, secretKey).toString();
+    driverSchema.index({ location: '2dsphere' });
+// // Encrypt sensitive data before saving to the database
+// driverSchema.pre('save', function (next) {
+//   const secretKey = 'your-secret-key'; // Replace with your secret key
+//   const encryptedCardNumber = CryptoJS.AES.encrypt(this.CardNumber, secretKey).toString();
+//   const encryptedCVV = CryptoJS.AES.encrypt(this.CVV, secretKey).toString();
+//   const encryptedExpiryDate = CryptoJS.AES.encrypt(this.ExpiryDate, secretKey).toString();
 
-  this.CardNumber = encryptedCardNumber;
-  this.CVV = encryptedCVV;
-  this.ExpiryDate = encryptedExpiryDate;
+//   this.CardNumber = encryptedCardNumber;
+//   this.CVV = encryptedCVV;
+//   this.ExpiryDate = encryptedExpiryDate;
 
-  next();
-});
+//   next();
+// });
 
-// Decrypt sensitive data after retrieving from the database
-driverSchema.post('init', function (doc) {
-  const secretKey = 'your-secret-key'; // Replace with your secret key
-  const decryptedCardNumber = CryptoJS.AES.decrypt(doc.CardNumber, secretKey).toString(CryptoJS.enc.Utf8);
-  const decryptedCVV = CryptoJS.AES.decrypt(doc.CVV, secretKey).toString(CryptoJS.enc.Utf8);
-  const decryptedExpiryDate = CryptoJS.AES.decrypt(doc.ExpiryDate, secretKey).toString(CryptoJS.enc.Utf8);
+// // Decrypt sensitive data after retrieving from the database
+// driverSchema.post('init', function (doc) {
+//   const secretKey = 'your-secret-key'; // Replace with your secret key
+//   const decryptedCardNumber = CryptoJS.AES.decrypt(doc.CardNumber, secretKey).toString(CryptoJS.enc.Utf8);
+//   const decryptedCVV = CryptoJS.AES.decrypt(doc.CVV, secretKey).toString(CryptoJS.enc.Utf8);
+//   const decryptedExpiryDate = CryptoJS.AES.decrypt(doc.ExpiryDate, secretKey).toString(CryptoJS.enc.Utf8);
 
-  doc.CardNumber = decryptedCardNumber;
-  doc.CVV = decryptedCVV;
-  doc.ExpiryDate = decryptedExpiryDate;
-});
+//   doc.CardNumber = decryptedCardNumber;
+//   doc.CVV = decryptedCVV;
+//   doc.ExpiryDate = decryptedExpiryDate;
+// });
 
   const setprofileImgURL = (doc) => {
     if (doc.profileImg) {
@@ -120,6 +121,8 @@ driverSchema.post('init', function (doc) {
     setprofileImgURL(doc);
     setcarImgURL(doc) ;
   });
+  // Create a geospatial index on the location field
+
 const driver = mongoose.model('driver', driverSchema);
 module.exports=driver;
 

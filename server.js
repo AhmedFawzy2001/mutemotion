@@ -49,7 +49,48 @@ app.use(bodyParser.json());
 // Parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Function to calculate distance between two coordinates in kilometers
+// function calculateDistance(lat1, lon1, lat2, lon2) {
+//   const R = 6371; // Radius of the earth in km
+//   const dLat = deg2rad(lat2 - lat1);
+//   const dLon = deg2rad(lon2 - lon1);
+//   const a =
+//     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+//     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+//     Math.sin(dLon / 2) * Math.sin(dLon / 2);
+//   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//   const d = R * c; // Distance in km
+//   return d;
+// }
 
+// // Function to calculate cost based on distance and service type
+// function calculateCost(distance, serviceType) {
+//   let costPerKm;
+//   switch (serviceType) {
+//     case 'MuteCar':
+//       costPerKm = 5; // 5 EGP per kilometer
+//       break;
+//     case 'Comfort':
+//       costPerKm = 7; // 7 EGP per kilometer
+//       break;
+//     case 'Black':
+//       costPerKm = 10; // 10 EGP per kilometer
+//       break;
+//     default:
+//       return 'Invalid service type';
+//   }
+//   return costPerKm * distance;
+// }
+
+// // Function to calculate estimated time based on distance
+// function calculateEstimatedTime(distance) {
+//   // Assuming an average speed of 60 km/h
+//   return (distance / 60) * 60; // Convert hours to minutes
+// }
+
+// function deg2rad(deg) {
+//   return deg * (Math.PI / 180);
+// }
 
 const ENCRYPTION_KEY = 'your-encryption-key'; // Must be kept secret
 
@@ -187,8 +228,163 @@ io.on('connection', async (socket) => {
     await driverUser.findOneAndUpdate({ driverId }, { isOnline: false });
   });
 });
+// // API endpoint to find the nearest driver, destination, and calculate distance, cost, and time
+// app.get('/findNearestDriver', async (req, res) => {
+//   const { startLat, startLon, destLat, destLon, serviceType } = req.query;
+//   if (!startLat || !startLon || !destLat || !destLon || !serviceType) {
+//     return res.status(400).json({ error: 'Missing parameters' });
+//   }
+
+//   // Query for the nearest driver
+//   try {
+//     const nearestDriver = await driverUser.findOne({
+//       location: {
+//         $near: {
+//           $geometry: {
+//             type: 'Point',
+//             coordinates: [parseFloat(startLon), parseFloat(startLat)]
+//           }
+//         }
+//       }
+//     }).select('fullname location');
+
+//     if (!nearestDriver) {
+//       return res.status(404).json({ message: 'No drivers found' });
+//     }
+
+//     // Calculate distance between your location and driver's location
+//     const distanceToDriver = calculateDistance(startLat, startLon, nearestDriver.location.coordinates[1], nearestDriver.location.coordinates[0]);
+    
+//     // Calculate distance between start and destination
+//     const distanceToDestination = calculateDistance(startLat, startLon, destLat, destLon);
+
+//     // Calculate cost based on service type and distance
+//     const cost = calculateCost(distanceToDestination, serviceType);
+
+//     // Calculate estimated time
+//     const time = calculateEstimatedTime(distanceToDestination);
+
+//     res.json({ 
+//       driver: nearestDriver, 
+//       distanceToDriver: distanceToDriver.toFixed(2), 
+//       distanceToDestination: distanceToDestination.toFixed(2), 
+//       cost: cost.toFixed(2), 
+//       time: time.toFixed(0) 
+//     });
+//   } catch (error) {
+//     console.error('Error finding nearest driver:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
 
 
+// Define the API endpoint to find the nearest driver, destination, and calculate distance, cost, and time
+app.get('/findNearestDriver', async (req, res) => {
+  // Retrieve query parameters from the request
+  const { startLat, startLon, destLat, destLon, serviceType } = req.query;
+
+  // Check if all required parameters are present
+  if (!startLat || !startLon || !destLat || !destLon || !serviceType) {
+    return res.status(400).json({ error: 'Missing parameters' });
+  }
+
+  try {
+    // Query for the nearest driver within 15km of the user's current location
+    const nearestDriver = await driverUser.findOne({
+      location: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(startLon), parseFloat(startLat)]
+          },
+          $maxDistance: 15000 // 15km in meters
+        }
+      }
+    }).select('name location');
+
+    // If no driver is found within the specified distance, return a 404 error
+    if (!nearestDriver) {
+      return res.status(404).json({ message: 'No drivers found within 15km' });
+    }
+
+    // Calculate distance between user's location and driver's location
+    const distanceToDriver = calculateDistance(startLat, startLon, nearestDriver.location.coordinates[1], nearestDriver.location.coordinates[0]);
+    
+    // Calculate estimated time for the driver to arrive at the user's location
+    const estimatedTimeToArrive = calculateEstimatedTime(distanceToDriver);
+
+    // Calculate distance between start and destination
+    const distanceToDestination = calculateDistance(startLat, startLon, destLat, destLon);
+
+    // Calculate estimated time to reach the destination
+    const estimatedTimeToDestination = calculateEstimatedTime(distanceToDestination);
+
+    // Calculate total estimated time (time to arrive + time to reach destination)
+    const totalEstimatedTime = estimatedTimeToArrive + estimatedTimeToDestination;
+
+    // Calculate cost based on service type and distance
+    const cost = calculateCost(distanceToDestination, serviceType);
+
+    // Send JSON response containing details about the nearest driver, distances, cost, and estimated time
+    res.json({ 
+      driver: nearestDriver, 
+      distanceToDriver: distanceToDriver.toFixed(2), 
+      distanceToDestination: distanceToDestination.toFixed(2), 
+      cost: cost.toFixed(2), 
+      estimatedTimeToArrive: estimatedTimeToArrive.toFixed(0),
+      estimatedTimeToDestination: estimatedTimeToDestination.toFixed(0),
+      totalEstimatedTime: totalEstimatedTime.toFixed(0)
+    });
+  } catch (error) {
+    // Handle errors and send appropriate response
+    console.error('Error finding nearest driver:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Function to calculate distance between two coordinates in kilometers
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const d = R * c; // Distance in km
+  return d;
+}
+
+// Function to calculate cost based on distance and service type
+function calculateCost(distance, serviceType) {
+  let costPerKm;
+  switch (serviceType) {
+    case 'economic':
+      costPerKm = 5; // 5 EGP per kilometer
+      break;
+    case 'comfort':
+      costPerKm = 7; // 7 EGP per kilometer
+      break;
+    case 'luxury':
+      costPerKm = 10; // 10 EGP per kilometer
+      break;
+    default:
+      return 'Invalid service type';
+  }
+  return costPerKm * distance;
+}
+
+// Function to calculate estimated time based on distance
+function calculateEstimatedTime(distance) {
+  // Assuming an average speed of 60 km/h
+  return (distance / 60) * 60; // Convert hours to minutes
+}
+
+// Function to convert degrees to radians
+function deg2rad(deg) {
+  return deg * (Math.PI / 180);
+}
 
   app.get("/",(req , res)=>{
     res.send("hello")
