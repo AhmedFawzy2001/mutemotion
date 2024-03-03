@@ -212,6 +212,7 @@ exports.signup = asyncHandler(async (req, res, next) => {
   
     res.json({ message: 'User verified successfully', user, token });
   });
+
   ////////////////////////
   exports.login = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
@@ -386,101 +387,198 @@ exports.signup = asyncHandler(async (req, res, next) => {
   // });
   //////////////////////////////
 
-  exports.resetPassword = asyncHandler(async (req, res, next) => {
-    try {
-        const { email } = req.body;
+//   exports.resetPassword = asyncHandler(async (req, res, next) => {
+//     try {
+//         const { email } = req.body;
 
-        // Check if the user exists
-        const user = await driverUser.findOne({ email });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+//         // Check if the user exists
+//         const user = await driverUser.findOne({ email });
+//         if (!user) {
+//             return res.status(404).json({ error: 'User not found' });
+//         }
 
-        // Generate verification code and expiry timestamp
-        const { verificationCode, expiryTimestamp } = generateExpiryVerificationCode();
+//         // Generate verification code and expiry timestamp
+//         const { verificationCode, expiryTimestamp } = generateExpiryVerificationCode();
 
-        // Store the verification code and expiry timestamp in the user's document
-        user.verificationCodeEncrypted = encryptData(verificationCode);
-        user.verificationCodeExpiry = expiryTimestamp;
-        await user.save();
+//         // Store the verification code and expiry timestamp in the user's document
+//         user.verificationCodeEncrypted = encryptData(verificationCode);
+//         user.verificationCodeExpiry = expiryTimestamp;
+//         await user.save();
 
-        // Send email with the verification code
-        const mailOptions = {
-            from: 'your-gmail-account@gmail.com',
-            to: email,
-            subject: 'Password Reset Verification Code',
-            html: `
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Password Reset Verification Code</title>
-                </head>
-                <body>
-                    <p>Your verification code is: <strong>${verificationCode}</strong></p>
-                </body>
-                </html>
-            `,
-        };
+//         // Send email with the verification code
+//         const mailOptions = {
+//             from: 'your-gmail-account@gmail.com',
+//             to: email,
+//             subject: 'Password Reset Verification Code',
+//             html: `
+//                 <!DOCTYPE html>
+//                 <html lang="en">
+//                 <head>
+//                     <meta charset="UTF-8">
+//                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+//                     <title>Password Reset Verification Code</title>
+//                 </head>
+//                 <body>
+//                     <p>Your verification code is: <strong>${verificationCode}</strong></p>
+//                 </body>
+//                 </html>
+//             `,
+//         };
 
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error(error);
-                return res.status(500).json({ error: 'Error sending verification code' });
-            } else {
-                console.log(`Verification code sent to: ${email}`);
-                return res.status(200).json({ message: 'Verification code sent successfully' });
-            }
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
+//         transporter.sendMail(mailOptions, (error, info) => {
+//             if (error) {
+//                 console.error(error);
+//                 return res.status(500).json({ error: 'Error sending verification code' });
+//             } else {
+//                 console.log(`Verification code sent to: ${email}`);
+//                 return res.status(200).json({ message: 'Verification code sent successfully' });
+//             }
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// });
+
+// exports.confirmResetPassword = asyncHandler(async (req, res, next) => {
+//     try {
+//         const { email, verificationCode, newPassword } = req.body;
+
+//         // Find the user by email
+//         const user = await driverUser.findOne({ email });
+//         if (!user) {
+//             return res.status(404).json({ error: 'User not found' });
+//         }
+
+//         // Check if the verification code has expired
+//         if (user.verificationCodeExpiry < Date.now()) {
+//             return res.status(401).json({ error: 'Verification code has expired' });
+//         }
+
+//         // Decrypt and verify the verification code
+//         const decryptedVerificationCode = decryptData(user.verificationCodeEncrypted);
+//         if (decryptedVerificationCode !== verificationCode) {
+//             return res.status(401).json({ error: 'Invalid verification code' });
+//         }
+
+//         // Hash the new password
+//         const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+//         // Update the user's password in the database
+//         user.password = hashedPassword;
+//         await user.save();
+
+//         // Clear the verification code and expiry timestamp
+//         user.verificationCodeEncrypted = null;
+//         user.verificationCodeExpiry = null;
+//         user.tokenEncrypted=null;
+//         user.loginStatus=false;
+//         await user.save();
+
+//         // Return response message to inform the user to log in again
+//         return res.status(200).json({ message: 'Password reset successfully. Please log in again.' });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// });
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+  try {
+      const { email } = req.body;
+
+      // Check if the user exists
+      const user = await driverUser.findOne({ email });
+      if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Generate verification code and expiry timestamp
+      const { verificationCode, expiryTimestamp } = generateExpiryVerificationCode();
+
+      // Store the verification code and expiry timestamp in the user's document
+      user.verificationCodeEncrypted = encryptData(verificationCode);
+      user.verificationCodeExpiry = expiryTimestamp;
+      await user.save();
+
+      // Send email with the verification code
+      const mailOptions = {
+          from: 'your-gmail-account@gmail.com',
+          to: email,
+          subject: 'Password Reset Verification Code',
+          html: `
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Password Reset Verification Code</title>
+              </head>
+              <body>
+                  <p>Your verification code is: <strong>${verificationCode}</strong></p>
+              </body>
+              </html>
+          `,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+              console.error(error);
+              return res.status(500).json({ error: 'Error sending verification code' });
+          } else {
+              console.log(`Verification code sent to: ${email}`);
+              return res.status(200).json({ message: 'Verification code sent successfully' });
+          }
+      });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 exports.confirmResetPassword = asyncHandler(async (req, res, next) => {
-    try {
-        const { email, verificationCode, newPassword } = req.body;
+try {
+    const { email, verificationCode, newPassword } = req.body;
 
-        // Find the user by email
-        const user = await driverUser.findOne({ email });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        // Check if the verification code has expired
-        if (user.verificationCodeExpiry < Date.now()) {
-            return res.status(401).json({ error: 'Verification code has expired' });
-        }
-
-        // Decrypt and verify the verification code
-        const decryptedVerificationCode = decryptData(user.verificationCodeEncrypted);
-        if (decryptedVerificationCode !== verificationCode) {
-            return res.status(401).json({ error: 'Invalid verification code' });
-        }
-
-        // Hash the new password
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // Update the user's password in the database
-        user.password = hashedPassword;
-        await user.save();
-
-        // Clear the verification code and expiry timestamp
-        user.verificationCodeEncrypted = null;
-        user.verificationCodeExpiry = null;
-        user.tokenEncrypted=null;
-        user.loginStatus=false;
-        await user.save();
-
-        // Return response message to inform the user to log in again
-        return res.status(200).json({ message: 'Password reset successfully. Please log in again.' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+    // Find the user by email
+    const user = await driverUser.findOne({ email });
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
     }
+
+    // Check if the verification code has expired
+    if (user.verificationCodeExpiry < Date.now()) {
+        return res.status(401).json({ error: 'Verification code has expired' });
+    }
+
+    // Decrypt and verify the verification code
+    const decryptedVerificationCode = decryptData(user.verificationCodeEncrypted);
+    if (decryptedVerificationCode !== verificationCode) {
+        return res.status(401).json({ error: 'Invalid verification code' });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password in the database
+    user.password = hashedPassword;
+    await user.save();
+
+    // Clear the verification code and expiry timestamp
+    user.verificationCodeEncrypted = null;
+    user.verificationCodeExpiry = null;
+    user.tokenEncrypted=null;
+    user.loginStatus=false;
+    await user.save();
+
+    // Return response message to inform the user to log in again
+    return res.status(200).json({ message: 'Password reset successfully. Please log in again.' });
+} catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+}
 });
+
+
   exports.requestAnotherVerificationCode = asyncHandler(async (req, res, next) => {
     try {
       const { email } = req.body;

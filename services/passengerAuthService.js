@@ -388,7 +388,7 @@ exports.signup = asyncHandler(async (req, res, next) => {
   // });
   //////////////////////////////
 
-  exports.resetPassword = asyncHandler(async (req, res, next) => {
+exports.resetPassword = asyncHandler(async (req, res, next) => {
     try {
         const { email } = req.body;
 
