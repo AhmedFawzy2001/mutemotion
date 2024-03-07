@@ -210,6 +210,21 @@ app.get('/api/passengerInfo', passengerAuthenticateAndEncryptToken, async (req, 
   }
 });
 
+app.post('/api/users/toggle', driverAuthenticateAndEncryptToken, (req, res) => {
+  try {
+      const { isOnline } = req.body;
+      const user = req.user; // Get authenticated user from middleware
+
+      // Update the user's online status
+      user.isOnline = isOnline;
+
+      return res.status(200).json({ message: 'User status updated successfully' });
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 // Socket.IO connection handler
 io.on('connection', async (socket) => {
@@ -279,7 +294,7 @@ io.on('connection', async (socket) => {
 
 
 // Define the API endpoint to find the nearest driver, destination, and calculate distance, cost, and time
-app.get('/findNearestDriver', async (req, res) => {
+app.get('/findNearestDriver', passengerAuthenticateAndEncryptToken, async (req, res) => {
   // Retrieve query parameters from the request
   const { startLat, startLon, destLat, destLon, serviceType } = req.query;
 
@@ -300,7 +315,7 @@ app.get('/findNearestDriver', async (req, res) => {
           $maxDistance: 15000 // 15km in meters
         }
       }
-    }).select('name location');
+    }).select('location fullname email phone age cartype color model carnum cardescription isOnline');
 
     // If no driver is found within the specified distance, return a 404 error
     if (!nearestDriver) {
