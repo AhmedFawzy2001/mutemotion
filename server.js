@@ -4,6 +4,7 @@ const deleteNonActivatedPassengers = require('./tasks/delete non-activated passe
 const sendActivationRemindersForDrivers = require('./tasks/reminder for non-activated drivers');
 const sendActivationRemindersForPassengers = require('./tasks/reminder for non-activated passengers');
 const nodemailer = require('nodemailer');
+const WebSocket = require('ws');
 // const cors = require('cors');
 const cors = require('cors'); // Import cors module
 const crypto = require('crypto');
@@ -34,7 +35,7 @@ deleteNonActivatedPassengers();
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
-
+const wss = new WebSocket.Server({ server });
 // app.use(cors());
 app.use(cors());
 app.options('*', cors());
@@ -540,6 +541,14 @@ socket.on('updateLocation', async ({ driverId, location }) => {
   
   socket.on('disconnect', () => {
     console.log('Client disconnected');
+  });
+});
+wss.on('connection', function connection(ws) {
+  console.log('WebSocket client connected');
+
+  ws.on('message', function incoming(message) {
+    console.log('Received video frame:', message);
+    // Handle video frames (e.g., save to disk, perform analysis)
   });
 });
 
