@@ -211,6 +211,37 @@ app.get('/api/passengerInfo', passengerAuthenticateAndEncryptToken, async (req, 
   }
 });
 
+app.delete('/passengerdelete-email', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const result = await passengerUser.deleteOne({ email });
+    if (result.deletedCount > 0) {
+      res.json({ message: 'Email deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Email not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting email:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+app.delete('/diverdelete-email', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const result = await driverUser.deleteOne({ email });
+    if (result.deletedCount > 0) {
+      res.json({ message: 'Email deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Email not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting email:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 app.post('/api/users/toggle', driverAuthenticateAndEncryptToken, (req, res) => {
   try {
       const { isOnline } = req.body;
