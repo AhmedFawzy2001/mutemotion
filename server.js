@@ -189,10 +189,10 @@ app.get('/api/passengerInfo', passengerAuthenticateAndEncryptToken, async (req, 
     const user = req.user;
 
     // Extract personal information from the user object
-    const { firstname, lastname, email, phone, gender } = user;
+    const {firstname,lastname,email,phone,gender} = user;
 
     // Concatenate first name and last name
-    const fullName =`${firstname }${lastname}`;
+    const fullName =`${firstname} ${lastname}`;
 
     // Construct a response object with the user's personal information
     const userInfo = {
